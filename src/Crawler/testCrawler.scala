@@ -1,4 +1,4 @@
-package Crawler
+package crawler
 import java.io._
 /**
  * @author MD103
@@ -21,8 +21,8 @@ object testCrawler {
   
   
   
-  def main(args : Array[String]){
-    getIndex;
-  }
+//  def main(args : Array[String]){
+//    getIndex;
+//  }
 }
 

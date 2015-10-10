@@ -1,12 +1,13 @@
-package Crawler
+package crawler
 
 /**
  * @author MD103
  */
-abstract class Statistic {
-  var NUM_OF_STUDENT : Int
-  var NUM_OF_DUPLICATES : Int
-  var NUM_OF_URLS : Int
-  var NUM_OF_IDENTICALS : Int
+object Statistic {
+  var NUM_OF_STUDENT : Int = 0
+  var NUM_OF_DUPLICATES : Int = 0
+  var NUM_OF_URLS : Int = 0
+  var NUM_OF_SAME_URLS : Int = 0
+  var NUM_OF_IDENTICALS : Int = 0
   
 }

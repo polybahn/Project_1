@@ -1,8 +1,9 @@
-package Crawler
+package crawler
 
 /**
  * @author MD103
  */
-class Enum {
+object Enum {
+  val startPage : String = "http://idvm-infk-hofmann03.inf.ethz.ch/eth/www.ethz.ch/en.html"
   
 }

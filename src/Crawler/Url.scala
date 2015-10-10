@@ -1,9 +1,9 @@
-package Crawler
+package crawler
 
 /**
  * @author MD103
  */
 abstract class Url {
   val urlpath: String
-  val doc :Document
+//  val doc :Document
 }
