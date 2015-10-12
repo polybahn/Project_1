@@ -1,10 +1,12 @@
 package crawler
 
+import scala.collection.mutable.HashSet
+
 /**
  * @author MD103
  */
 object CrawledUrl {
-  private val crawledPool = new java.util.HashSet[String]()
+  private val crawledPool = new HashSet[String]()
 
   /*
    * To judge if an url is already crawled 

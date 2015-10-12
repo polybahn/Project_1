@@ -25,9 +25,6 @@ import java.util.concurrent.LinkedBlockingQueue
 object CrawlerTest extends App {
 
   new Crawler().crawl
-  //  val seq = Seq("a","b")
-  //  println(seq.mkString(","))
-  //   println(Seq.empty[String].mkString(",").length())
 }
 
 class Crawler(startPage: String = Enum.startPage) {
@@ -38,13 +35,12 @@ class Crawler(startPage: String = Enum.startPage) {
   def crawl {
     queue.put(startPage)
     while (!queue.isEmpty()) {
-      val cur_url = queue.poll()
+      val cur_url = queue.remove()
       if (cur_url != null && !CrawledUrl.isExist(cur_url)) {
         crawlPageLinks(cur_url,  new String(get(cur_url)._2))
       }
     }
 
-    latch.await()
     println("Distinct URLs found: " + Statistic.NUM_OF_URLS)
     println("Exact duplicates found: " + Statistic.NUM_OF_DUPLICATES)
     println("Unique English pages found: " + Statistic.NUM_OF_EN_PAGE)
@@ -56,7 +52,7 @@ class Crawler(startPage: String = Enum.startPage) {
   private def crawlPageLinks(pageUrl: String, pageContent: String) {
     require(pageContent != null)
     Statistic.NUM_OF_URLS += 1
-//    println("Num_Of_Urls: " + Statistic.NUM_OF_URLS + "url: " + pageUrl)
+    println("Num_Of_Urls: " + Statistic.NUM_OF_URLS + " url: " + pageUrl)
     val doc: Document = new Document(pageContent)
     Statistic.NUM_OF_STUDENT += doc.num_of_student
     if (doc.isEn) Statistic.NUM_OF_EN_PAGE += 1
@@ -68,13 +64,13 @@ class Crawler(startPage: String = Enum.startPage) {
       if (DetecterNew.isNearDuplicate(doc.fingerprint)) {
         Statistic.NUM_OF_DUPLICATES += 1
 //        println("duplicate found :" + Statistic.NUM_OF_DUPLICATES + "in " + Statistic.NUM_OF_URLS + " pages")
-      }
+      } 
       DetecterNew.add(doc.fingerprint)
       val links = Parser.extractOutLinks(pageUrl, pageContent)
-      links.map {
-        link => if(!CrawledUrl.isExist(link)) queue.put(link)
-      }
+      links.map {link => if(!CrawledUrl.isExist(link)) queue.put(link)}
     }
+    
+//    println("total:"+Statistic.NUM_OF_URLS + " iden: " + Statistic.NUM_OF_IDENTICALS +" near: "+Statistic.NUM_OF_DUPLICATES+" stu: "+Statistic.NUM_OF_STUDENT)
   }
   
  

@@ -4,6 +4,8 @@ import java.net.URL
 import crawler.CrawledUrl
 import java.util.regex.Pattern
 import crawler.Enum
+import crawler.Statistic
+
 
 /**
  * @author MD103
@@ -29,19 +31,26 @@ object Parser {
    */
   def extractOutLinks(parentUrl: String, html: String) = {
     val baseHost = getHostBase(parentUrl)
+    
     val links: Set[String] = fetchLinks(html).map {
       link =>
+//        println("0 "+link)
         link match {
           case link if link.startsWith("/") => baseHost + link
           case link if link.startsWith("http:") || link.startsWith("https:") => link
+          case link if link.startsWith("../") => link.replace("../","")
           case _ =>
             val index = parentUrl.lastIndexOf("/")
             parentUrl.substring(0, index) + "/" + link
+//            link
         }
     }.filter {
       // only save not-crawled links
       link => !CrawledUrl.isExist(link) && link.contains(Enum.feature) 
     }
+//    links.map{
+//      link => println("1  "+ link)
+//    }
     links
   }
 

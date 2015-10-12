@@ -43,5 +43,5 @@ object DetecterNew {
     fg_DB += fingerprint
   }
   
-  private var fg_DB: HashSet[Int] = new HashSet[Int]()
+  private val fg_DB: HashSet[Int] = new HashSet[Int]()
 }
