@@ -73,17 +73,13 @@ class Document(val str: String) {
    count
   }
   
-  def isMostInEn():Boolean ={
-    true
-  }
+
   
   
   // document content
   val content: String = str
-  //define the number of words in one shingle
-  val words_num_in_a_shingle: Int = 3
   // shingles in this document
-  val shingles: Set[Shingle] = getShingles(str, words_num_in_a_shingle)
+  val shingles: Set[Shingle] = getShingles(str, Enum.words_num_in_a_shingle)
   // simHash value of shingles in this document
   val hashValue: List[Int] = getSimhashValue(shingles)
   // calculate fingerprint from hash values of shingles
@@ -92,7 +88,7 @@ class Document(val str: String) {
   // num of word "student"
   val num_of_student : Int = countWord(Enum.targetWord)
   // is this document mostly written in English
-  val isEn : Boolean = isMostInEn()
+  val isEn : Boolean = LangRecognizer.isMostInEn(content)
   
 
 //  val language: String
