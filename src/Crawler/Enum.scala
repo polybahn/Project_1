@@ -11,10 +11,9 @@ object Enum {
   val path_EN: String = "dictEN"
   val path_DE: String = "dictDE"
 
-  val fingerprintLen: Int = 32
+  val fingerprintLen: Int = 64
 
-  val num_permutation: Int = 20
-  val max_different_bits_neardups: Int = 2
+  val max_different_bits_neardups: Int = 1
   
     //define the number of words in one shingle
   val words_num_in_a_shingle: Int = 3

@@ -14,7 +14,6 @@ import scala.collection.JavaConversions.mapAsScalaMap
 import scala.collection.JavaConversions.mapAsScalaMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.ExecutionContext.Implicits.global
-import lib.Parser
 import java.io.ByteArrayOutputStream
 /**
  * @author MD103
@@ -34,9 +33,13 @@ class Crawler(startPage: String = Enum.startPage) {
     while (!queue.isEmpty()) {
       val cur_url = queue.remove()
       if (cur_url != null && !CrawledUrl.isExist(cur_url)) {
-        crawlPageLinks(cur_url, new String(get(cur_url)._2))
+        val crawlres = get(cur_url)
+        crawlPageLinks(cur_url, crawlres._1, new String(crawlres._2))
       }
     }
+    //    val testData = Array[String]("http://idvm-infk-hofmann03.inf.ethz.ch/eth/www.ethz.ch/en/the-eth-zurich/education/quality-management.html","http://idvm-infk-hofmann03.inf.ethz.ch/eth/www.ethz.ch/en/the-eth-zurich/portrait/honorary-councillors-and-honorary-doctors.html")
+    //    
+    //    testData.foreach(t => crawlPageLinks(t, new String(get(t)._2)))
 
     println("Distinct URLs found: " + Statistic.NUM_OF_URLS)
     println("Exact duplicates found: " + Statistic.NUM_OF_IDENTICALS)
@@ -46,34 +49,52 @@ class Crawler(startPage: String = Enum.startPage) {
 
   }
 
-  private def crawlPageLinks(pageUrl: String, pageContent: String) {
-    require(pageContent != null)
-    Statistic.NUM_OF_URLS += 1
-    println("Num_Of_Urls: " + Statistic.NUM_OF_URLS + " url: " + pageUrl)
-    val doc: Document = new Document(pageContent)
-    Statistic.NUM_OF_STUDENT += doc.num_of_student
-    if (doc.isEn) Statistic.NUM_OF_EN_PAGE += 1
+  private def crawlPageLinks(pageUrl: String, resultCode: Int, pageContent: String) {
 
-    if (DetecterNew.isExist(doc.fingerprint)) {
-      Statistic.NUM_OF_IDENTICALS += 1
-      //       println("identical found :"+  Statistic.NUM_OF_IDENTICALS + "in " + Statistic.NUM_OF_URLS +" pages")
-    } else {
-      if (DetecterNew.isNearDuplicate(doc.fingerprint)) {
-        Statistic.NUM_OF_DUPLICATES += 1
-        //        println("duplicate found :" + Statistic.NUM_OF_DUPLICATES + "in " + Statistic.NUM_OF_URLS + " pages")
+    if (resultCode == 200) {
+      Statistic.NUM_OF_URLS += 1
+      if (!pageContent.equals("") && pageContent.length() > 0 && !pageUrl.contains("login")) {
+        //      println(pageUrl)
+        val doc: Document = new Document(pageUrl, pageContent)
+
+        var isIdentical: Boolean = false;
+        if (DetecterNew.isExist(doc.fingerprint)._1) {
+          if (doc.fingerprint != 1328805421) {
+            //                            println("2____" + doc.fingerprint + ": " + pageUrl)
+            val a = new Document(DetecterNew.isExist(doc.fingerprint)._2, new String(get(DetecterNew.isExist(doc.fingerprint)._2)._2))
+            val b = new Document(pageUrl, new String(get(pageUrl)._2))
+            if (a.shingles == b.shingles) {
+              println("1_____" + a.fingerprint + a.url)
+              println("2_____" + b.fingerprint + b.url)
+              Statistic.NUM_OF_IDENTICALS += 1
+              isIdentical = true
+            } else {
+              isIdentical = true
+            }
+          }
+        }
+        if (!isIdentical) {
+          if (DetecterNew.isNearDuplicate(doc.fingerprint)) {
+            Statistic.NUM_OF_DUPLICATES += 1
+          } else {
+            if (doc.isEn) {
+              Statistic.NUM_OF_EN_PAGE += 1
+              Statistic.NUM_OF_STUDENT += doc.num_of_student
+            }
+          }
+          DetecterNew.add(doc.fingerprint)
+          DetecterNew.add_to_print(doc.fingerprint, pageUrl)
+          val links = Parser.extractOutLinks(pageUrl, pageContent)
+          links.map { link => if (!CrawledUrl.isExist(link)) queue.put(link) }
+        }
       }
-      DetecterNew.add(doc.fingerprint)
-      val links = Parser.extractOutLinks(pageUrl, pageContent)
-      links.map { link => if (!CrawledUrl.isExist(link)) queue.put(link) }
     }
-
-    //    println("total:"+Statistic.NUM_OF_URLS + " iden: " + Statistic.NUM_OF_IDENTICALS +" near: "+Statistic.NUM_OF_DUPLICATES+" stu: "+Statistic.NUM_OF_STUDENT)
   }
 
   private def get(url: String) = {
     val uri = new URL(url);
     val conn = uri.openConnection().asInstanceOf[HttpURLConnection];
-    conn.setConnectTimeout(100000)
+    conn.setConnectTimeout(10000)
     conn.setReadTimeout(1000000)
 
     try {
@@ -97,14 +118,16 @@ class Crawler(startPage: String = Enum.startPage) {
         conn.disconnect
         CrawledUrl.add(url)
 
-        (conn.getResponseCode(), data, headers)
+        (conn.getResponseCode(), data)
       } else {
+        //        println(url)
         conn.disconnect
-        (conn.getResponseCode(), Array[Byte](), null)
+        (conn.getResponseCode(), Array[Byte]())
       }
     } catch {
-      case e : Exception => {conn.disconnect
-        (-1, Array[Byte](), null)
+      case e: Exception => {
+        conn.disconnect
+        (-1, Array[Byte]())
       }
     }
   }

@@ -1,6 +1,7 @@
 package crawler
 
 import scala.collection.mutable.HashSet
+import scala.collection.mutable.HashMap
 
 /**
  * @author MD103
@@ -10,18 +11,19 @@ object DetecterNew {
   /**
    * test exactly ones
    */
-  def isExist(fingerprint: Int): Boolean = {
+  def isExist(fingerprint: Long): (Boolean, String) = {
     if (fg_DB.contains(fingerprint)) {
-      return true
+//      println("1____"+fingerprint + ": "+fg_MAP(fingerprint))
+      return (true, fg_MAP(fingerprint))
     } else {
-      return false
+      return (false, null)
     }
   }
   /**
    * Using XOR to judge near duplicates
    */
-  def isNearDuplicate(fingerprint: Int): Boolean = {
-    def BitCount2(num: Int): Int = {
+  def isNearDuplicate(fingerprint: Long): Boolean = {
+    def BitCount2(num: Long): Int = {
       var c: Int = 0;
       var temp = num
       while (temp != 0) {
@@ -30,18 +32,23 @@ object DetecterNew {
       }
       c
     }
-    var l: List[Int] = fg_DB.toList
+    var l: List[Long] = fg_DB.toList
     for (i <- List.range(0, fg_DB.size)) {
-      if (BitCount2(l(i) ^ fingerprint) <= Enum.max_different_bits_neardups) {
+      if (BitCount2(l(i) ^ fingerprint) == Enum.max_different_bits_neardups) {
         return true
       }
     }
     return false
   }
 
-  def add(fingerprint : Int): Unit = {
+  def add(fingerprint : Long): Unit = {
     fg_DB += fingerprint
   }
   
-  private val fg_DB: HashSet[Int] = new HashSet[Int]()
+  def add_to_print(f : Long, s : String){
+     fg_MAP += (f -> s)
+  }
+  
+  private val fg_DB: HashSet[Long] = new HashSet[Long]()
+  private val fg_MAP : HashMap[Long, String] = new HashMap[Long, String]()
 }
